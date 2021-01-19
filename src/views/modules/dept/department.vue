@@ -58,11 +58,16 @@
       >
       </el-table-column>
       <el-table-column
-        prop="departmentPrincipal"
+        prop="departmentPrincipalName"
         header-align="center"
         align="center"
         label="部门负责人"
       >
+      <template slot-scope="scope">
+          <router-link :to="{ path: 'personnel-employee', query: { id: scope.row.departmentPrincipal } }">
+            <a>{{ scope.row.departmentPrincipalName }}</a>
+          </router-link>
+        </template>
       </el-table-column>
       <el-table-column
         prop="enable"

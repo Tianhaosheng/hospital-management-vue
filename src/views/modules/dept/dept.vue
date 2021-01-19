@@ -58,7 +58,7 @@
       >
       </el-table-column>
       <el-table-column
-        prop="deptPrincipal"
+        prop="deptPrincipalName"
         header-align="center"
         align="center"
         label="科室负责人"

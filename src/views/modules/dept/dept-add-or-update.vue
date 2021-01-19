@@ -9,16 +9,25 @@
       :rules="dataRule"
       ref="dataForm"
       @keyup.enter.native="dataFormSubmit()"
-      label-width="80px"
+      label-width="100px"
     >
       <el-form-item label="科室名字" prop="deptName">
         <el-input v-model="dataForm.deptName" placeholder="科室名字"></el-input>
       </el-form-item>
       <el-form-item label="科室负责人" prop="deptPrincipal">
-        <el-input
+        <!-- <el-input
           v-model="dataForm.deptPrincipal"
           placeholder="科室负责人"
-        ></el-input>
+        ></el-input> -->
+        <el-cascader
+          :props="defaultParams"
+          placeholder="试试搜索：张三"
+          :options="options"
+          filterable
+          clearable
+          v-model="dataForm.deptPrincipal"
+          :show-all-levels="false"
+        ></el-cascader>
       </el-form-item>
       <el-form-item label="科室地址" prop="deptAddress">
         <el-input
@@ -63,6 +72,23 @@
 export default {
   data() {
     return {
+      options: [
+        {
+          id: 1,
+          name: "院长",
+          children: [
+            {
+              id: 1,
+              name: "张三",
+            },
+          ],
+        },
+      ],
+      defaultParams: {
+        label: "name",
+        value: "id",
+        children: "children",
+      },
       department_options: [
         {
           value: "1",
@@ -125,10 +151,11 @@ export default {
           }).then(({ data }) => {
             if (data && data.code === 0) {
               this.dataForm.deptName = data.dept.deptName;
-              this.dataForm.deptPrincipal = data.dept.deptPrincipal;
+              this.dataForm.deptPrincipal = data.dept.deptPrincipalPath;
               this.dataForm.deptAddress = data.dept.deptAddress;
               this.dataForm.enable = data.dept.enable;
               this.value = data.dept.department;
+              this.options = data.employeeCascader;
               console.log(this.value)
             }
           });
@@ -147,7 +174,7 @@ export default {
             data: this.$http.adornData({
               id: this.dataForm.id || undefined,
               deptName: this.dataForm.deptName,
-              deptPrincipal: this.dataForm.deptPrincipal,
+              deptPrincipal: this.dataForm.deptPrincipal[1],
               deptAddress: this.dataForm.deptAddress,
               enable: this.dataForm.enable,
               department: this.value,

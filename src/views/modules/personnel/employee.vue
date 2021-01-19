@@ -149,6 +149,7 @@ export default {
       dataForm: {
         key: "",
       },
+      id: 0,
       ok: false,
       dataList: [],
       pageIndex: 1,
@@ -169,6 +170,15 @@ export default {
     // 获取数据列表
     getDataList() {
       this.dataListLoading = true;
+      //接收参数
+      var id = this.$route.query.id;
+        if(id === undefined){
+          this.id = null;
+          console.log(this.id)
+        }else{
+          this.id = id;
+          console.log(this.id)
+        }
 
       this.$http({
         url: this.$http.adornUrl("/personnel/employee/list"),
@@ -177,6 +187,7 @@ export default {
           page: this.pageIndex,
           limit: this.pageSize,
           key: this.dataForm.key,
+          id: this.id
         }),
       }).then(({ data }) => {
         if (data && data.code === 0) {
