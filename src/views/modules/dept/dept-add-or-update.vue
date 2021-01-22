@@ -48,7 +48,7 @@
       <el-form-item label="所属部门" prop="department">
         <!-- <el-input v-model="dataForm.department" placeholder="所属部门"></el-input> -->
         <template>
-          <el-select v-model="value" placeholder="请选择">
+          <el-select v-model="dataForm.department" placeholder="请选择">
             <el-option
               v-for="item in department_options"
               :key="item.id"
@@ -91,11 +91,10 @@ export default {
       },
       department_options: [
         {
-          value: "1",
-          label: "门诊部",
+          id: "1",
+          departmentName: "门诊部",
         },
       ],
-      value: "",
       visible: false,
       dataForm: {
         id: 0,
@@ -154,9 +153,8 @@ export default {
               this.dataForm.deptPrincipal = data.dept.deptPrincipalPath;
               this.dataForm.deptAddress = data.dept.deptAddress;
               this.dataForm.enable = data.dept.enable;
-              this.value = data.dept.department;
+              this.dataForm.department = data.dept.department;
               this.options = data.employeeCascader;
-              console.log(this.value)
             }
           });
         }
@@ -177,7 +175,7 @@ export default {
               deptPrincipal: this.dataForm.deptPrincipal[1],
               deptAddress: this.dataForm.deptAddress,
               enable: this.dataForm.enable,
-              department: this.value,
+              department: this.dataForm.department,
             }),
           }).then(({ data }) => {
             if (data && data.code === 0) {

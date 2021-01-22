@@ -18,23 +18,27 @@
         ></el-input>
       </el-form-item>
       <el-form-item label="员工性别" prop="employeeSex">
-        <el-input
+        <!-- <el-input
           v-model="dataForm.employeeSex"
           placeholder="员工性别"
-        ></el-input>
+        ></el-input> -->
+        <el-radio v-model="dataForm.employeeSex" label="男">男</el-radio>
+        <el-radio v-model="dataForm.employeeSex" label="女">女</el-radio>
       </el-form-item>
-      <el-form-item label="上级领导" prop="employeeSuperiorId">
-        <el-input
-          v-model="dataForm.employeeSuperiorId"
-          placeholder="上级领导"
-        ></el-input>
+      <el-form-item label="员工照片" prop="employeePhoto">
+        <!-- <el-input v-model="dataForm.logo" placeholder="品牌logo地址"></el-input> -->
+        <single-upload v-model="dataForm.employeePhoto"></single-upload>
       </el-form-item>
       <el-form-item label="员工职位" prop="employeePositionId">
         <!-- <el-input
           v-model="dataForm.employeePositionId"
           placeholder="员工职位"
         ></el-input> -->
-        <el-select v-model="value" placeholder="请选择">
+        <el-select
+          v-model="dataForm.employeePositionId"
+          @change="getEmployeeByPositionId(dataForm.employeePositionId)"
+          placeholder="请选择"
+        >
           <el-option
             v-for="item in position_options"
             :key="item.id"
@@ -44,6 +48,26 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="上级领导" prop="employeeSuperiorId">
+        <!-- <el-input
+          v-model="dataForm.employeeSuperiorId"
+          placeholder="上级领导"
+        ></el-input> -->
+        <el-select
+          v-model="dataForm.employeeSuperiorId"
+          :disabled="is"
+          :placeholder="msg"
+        >
+          <el-option
+            v-for="item in employeeSuperior_options"
+            :key="item.id"
+            :label="item.employeeName"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="员工描述" prop="employeeDescription">
         <el-input
           v-model="dataForm.employeeDescription"
@@ -59,16 +83,25 @@
 </template>
 
 <script>
+import SingleUpload from "@/components/upload/singleUpload";
 export default {
+  components: { SingleUpload },
   data() {
     return {
-      position_options: [
+      employeeSuperior_options: [
         {
-          value: "选项1",
-          label: "黄金糕",
+          id: 1,
+          employeeName: "测试",
         },
       ],
-      value: "",
+      position_options: [
+        {
+          id: 1,
+          positionName: "院长",
+        },
+      ],
+      msg: "请选择",
+      is: false,
       visible: false,
       dataForm: {
         id: 0,
@@ -77,6 +110,7 @@ export default {
         employeeSuperiorId: "",
         employeePositionId: "",
         employeeDescription: "",
+        employeePhoto: "",
       },
       dataRule: {
         employeeName: [
@@ -88,7 +122,7 @@ export default {
         // employeeSuperiorId: [
         //   { required: true, message: '上级领导不能为空', trigger: 'blur' }
         // ],
-        value: [
+        employeePositionId: [
           { required: true, message: "员工职位不能为空", trigger: "blur" },
         ],
         // employeeDescription: [
@@ -102,12 +136,34 @@ export default {
       this.dataForm.id = id || 0;
       this.visible = true;
 
+      //获取职位列表
       this.$http({
         url: this.$http.adornUrl("/personnel/employee/position/list"),
         method: "get",
       }).then(({ data }) => {
         this.position_options = data.data;
       });
+      //根据id获取上级职位员工列表
+      if (this.dataForm.id) {
+        this.$http({
+          url: this.$http.adornUrl(
+            `/personnel/employee/employeeSuperiorByEmployeeId/list/${this.dataForm.id}`
+          ),
+          method: "get",
+        }).then(({ data }) => {
+          if (data && data.code === 0) {
+            this.employeeSuperior_options = data.data;
+            this.msg = "请选择";
+            this.is = false;
+          } else {
+            this.msg = data.msg;
+            this.is = true;
+          }
+        });
+      } else {
+        this.msg = "请先选择员工职位";
+        this.is = true;
+      }
 
       this.$nextTick(() => {
         this.$refs["dataForm"].resetFields();
@@ -122,9 +178,13 @@ export default {
             if (data && data.code === 0) {
               this.dataForm.employeeName = data.employee.employeeName;
               this.dataForm.employeeSex = data.employee.employeeSex;
-              this.dataForm.employeeSuperiorId = data.employee.employeeSuperiorId;
-              this.value = data.employee.employeePositionId;
-              this.dataForm.employeeDescription = data.employee.employeeDescription;
+              this.dataForm.employeeSuperiorId =
+                data.employee.employeeSuperiorId;
+              this.dataForm.employeePositionId =
+                data.employee.employeePositionId;
+              this.dataForm.employeeDescription =
+                data.employee.employeeDescription;
+              this.dataForm.employeePhoto = data.employee.employeePhoto;
             }
           });
         }
@@ -144,8 +204,9 @@ export default {
               employeeName: this.dataForm.employeeName,
               employeeSex: this.dataForm.employeeSex,
               employeeSuperiorId: this.dataForm.employeeSuperiorId,
-              employeePositionId: this.value,
+              employeePositionId: this.dataForm.employeePositionId,
               employeeDescription: this.dataForm.employeeDescription,
+              employeePhoto: this.dataForm.employeePhoto,
             }),
           }).then(({ data }) => {
             if (data && data.code === 0) {
@@ -162,6 +223,25 @@ export default {
               this.$message.error(data.msg);
             }
           });
+        }
+      });
+    },
+    //查询某个职位的员工
+    getEmployeeByPositionId(employeePositionId) {
+      this.dataForm.employeeSuperiorId = "";
+      this.$http({
+        url: this.$http.adornUrl(
+          `/personnel/employee/employeeSuperiorByPositionId/list/${this.dataForm.employeePositionId}`
+        ),
+        method: "get",
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.employeeSuperior_options = data.data;
+          this.msg = "请选择";
+          this.is = false;
+        } else {
+          this.msg = data.msg;
+          this.is = true;
         }
       });
     },

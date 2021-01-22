@@ -35,7 +35,14 @@
         label="职位名">
       </el-table-column>
       <el-table-column
+        v-if="show"
         prop="positionSuperiorId"
+        header-align="center"
+        align="center"
+        label="上级">
+      </el-table-column>
+      <el-table-column
+        prop="positionSuperiorName"
         header-align="center"
         align="center"
         label="上级">
@@ -54,7 +61,7 @@
         label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
-          <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" @click="deleteHandle(scope.row.id,scope.row.positionName)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -77,6 +84,7 @@
   export default {
     data () {
       return {
+        show: false,
         dataForm: {
           key: ''
         },
@@ -154,11 +162,15 @@
         })
       },
       // 删除
-      deleteHandle (id) {
+      deleteHandle (id,positionName) {
         var ids = id ? [id] : this.dataListSelections.map(item => {
           return item.id
         })
-        this.$confirm(`确定对[id=${ids.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
+        var positionNames = positionName ? [positionName] : this.dataListSelections.map(item => {
+          return item.positionName
+        })
+
+        this.$confirm(`确定对[${positionNames.join(',')}]进行[${id ? '删除' : '批量删除'}]操作?`, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'

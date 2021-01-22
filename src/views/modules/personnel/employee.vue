@@ -58,6 +58,20 @@
       >
       </el-table-column>
       <el-table-column
+        prop="employeePhoto"
+        header-align="center"
+        align="center"
+        label="员工照片"
+      >1
+      <template slot-scope="scope">
+          <!-- <el-image
+              style="width: 100px; height: 80px"
+              :src="scope.row.logo"
+          fit="fill"></el-image>-->
+          <img :src="scope.row.employeePhoto" style="width: 80px; height: 100px" />
+        </template>
+      </el-table-column>
+      <el-table-column
         prop="employeeSex"
         header-align="center"
         align="center"
@@ -65,7 +79,15 @@
       >
       </el-table-column>
       <el-table-column
+        v-if="show"
         prop="employeeSuperiorId"
+        header-align="center"
+        align="center"
+        label="上级领导"
+      >
+      </el-table-column>
+      <el-table-column
+        prop="employeeSuperiorName"
         header-align="center"
         align="center"
         label="上级领导"
@@ -149,6 +171,7 @@ export default {
       dataForm: {
         key: "",
       },
+      show: false,
       id: 0,
       ok: false,
       dataList: [],
